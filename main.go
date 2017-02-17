@@ -3,7 +3,10 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -23,8 +26,8 @@ type Data struct {
 		Key    string
 		Fields struct {
 			Issuetype struct {
-					  IconURL string
-					  Name    string
+				IconURL string
+				Name    string
 			}
 			Summary string
 		}
@@ -44,9 +47,13 @@ type Data struct {
 // Message structure for Mattermost JSON creation.
 type Message struct {
 	Text     string `json:"text"`
+	Channel  string `json:"channel,omitempty"`
 	Username string `json:"username"`
 	IconURL  string `json:"icon_url"`
 }
+
+// RoomMapping map holds ProjectKey:MattermostRoomName
+type RoomMapping map[string]string
 
 func getMessage(request *http.Request) []byte {
 	// Parse JSON from JIRA
@@ -121,19 +128,32 @@ func getMessage(request *http.Request) []byte {
 		comment,
 	)
 
+	channel := ""
+	issueKeySplit := strings.Split(data.Issue.Key, "-")
+	fmt.Println("Mappings", mappings)
+	fmt.Println("Length", len(issueKeySplit))
+	fmt.Println("First", issueKeySplit[0])
+	if mappings != nil && len(issueKeySplit) > 1 && issueKeySplit[0] != "" {
+		channel, _ = mappings[issueKeySplit[0]]
+		fmt.Printf("Room Lookup: %q\n", channel)
+	}
+
 	message := Message{
 		Text:     text,
+		Channel:  channel,
 		Username: "JIRA",
-		IconURL:  "https://raw.githubusercontent.com/unco-games/mattermost-jira/master/logo-02.png",
+		IconURL:  "https://raw.githubusercontent.com/csduarte/mattermost-jira/master/logo-02.png",
 	}
+	fmt.Printf("Input Data: \n %v", data)
+	fmt.Printf("Output Message: \n %v", message)
 
 	JSONMessage, _ := json.Marshal(message)
 
 	return JSONMessage
 }
 
-func index(_ http.ResponseWriter, r *http.Request) {
-
+func index(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("Request Incoming: %v%v\n", r.Host, r.RequestURI)
 	// Get mattermost URL
 	mattermostHookURL := r.URL.Query().Get("mattermost_hook_url")
 
@@ -152,15 +172,43 @@ func index(_ http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 		defer resp.Body.Close()
+		ioutil.ReadAll(resp.Body)
+		w.WriteHeader(http.StatusOK)
+	} else {
+		fmt.Println("WARN: Request missing query param 'mattermost_hook_url`")
+		w.WriteHeader(http.StatusBadRequest)
 	}
+
+	w.Write([]byte("OK"))
 }
 
+var mappings RoomMapping
+
 func main() {
+	var mapfile = flag.String("map", "", "JSON Mapping File")
+	flag.Parse()
+	fmt.Println(*mapfile)
+
+	if *mapfile != "" {
+		mapdata, err := ioutil.ReadFile(*mapfile)
+		if err != nil {
+			fmt.Printf("Failed to load map file from path: %q\n", *mapfile)
+			fmt.Printf("Error: %v\n", err.Error())
+			os.Exit(1)
+		}
+		if err := json.Unmarshal(mapdata, &mappings); err != nil {
+			fmt.Printf("Failed to decode JSON from mapping: %v\n", err.Error())
+			os.Exit(1)
+		}
+	} else {
+		fmt.Println("WARN: No Channel Map file specified (-map=/path/to/file)")
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "5000"
 	}
+	fmt.Printf("Server starting on 0.0.0.0:%v\n", port)
 	http.HandleFunc("/", index)
-	http.ListenAndServe(":"+port, nil)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
