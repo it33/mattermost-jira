@@ -1,7 +1,0 @@
-{
-  "name": "Mattermost ← JIRA connector",
-  "description": "",
-  "repository": "https://github.com/csduarte/mattermost-jira",
-  "logo": "https://design.atlassian.com/images/logo/favicon.png",
-  "keywords": ["mattermost", "jira", "webhook", "go", "golang"]
-}

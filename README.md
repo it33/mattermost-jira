@@ -18,10 +18,10 @@ You need incoming webhook URL in `http://<mattermost_server>/hooks/<web_hook_id>
 3. `Add Incoming Webhook`
  
 ## For JIRA administrator
- - JIRA Administration → System
- - ADVANCED → WebHooks
- - Create a WebHook:
-    - URL:  https://_**heroku_app_name**_.herokuapp.com?mattermost_hook_url=_**mattermost_hook_url**_
+1. JIRA Administration → System
+2. ADVANCED → WebHooks
+3. Create a WebHook:
+    - URL:  https://_**heroku_app_name**_.herokuapp.com?mattermost_hook_url=_**mattermost_hook_url**&channel=**channel_name**
     - Issue:
         - created: true
         - updated: true
@@ -31,25 +31,22 @@ You need incoming webhook URL in `http://<mattermost_server>/hooks/<web_hook_id>
 `go build`
 
 ## Run
-`./mattermost-jira -map=/absolute/path/to/mapping.json` map flag optional if you want room mapping
-`./mattermost-jira -map=./mapping.json 2&1 >> data.log &`  pipe stderr and stdout to file and disown process
+`./mattermost-jira` map flag optional if you want room mapping
+`./mattermost-jira 2&1 >> data.log &`  pipe stderr and stdout to file and disown process
 
 ## Test
 While server is running in background or different session, execute:
-```
-curl -X POST -H "Content-Type: application/json" --data @sample_hook.json localhost:5000?mattermost_hook_url=http://localhost:8065/hooks/bh9iwe5ezibepfcmqibgxpqs4c
+
+Simple Test:
+```bash
+curl -X POST -H "Content-Type: application/json" --data @sample_hook.json "localhost:5000?mattermost_hook_url=http://localhost:8065/hooks/67qhmgccxffaunr886gfewoqfo&channel=off-topic"
 ```
 
-## Room Map
-The issue key will be split on the hypen and the project key will be looked up in a provided map.
-example `JRA-121` -> `JRA`
-example mapping.json
-
+Simple Repeated Test:
+```bash
+while sleep 0.2 
+do 
+	(curl -X POST -H "Content-Type: application/json" --data @sample_hook.json "localhost:5000?mattermost_hook_url=http://localhost:8065/hooks/67qhmgccxffaunr886gfewoqfo&channel=town-square") &
+done
 ```
-{
-    "jiraprojectkey":"uchatroomname",
-    "JRA":"off-topic"
-}
-```
-If no key is found, the message will be sent to the default channel for the incoming webhook (configured when webhook is generated).
         
