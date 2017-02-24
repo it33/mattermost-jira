@@ -2,6 +2,7 @@ package jira
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -42,17 +43,20 @@ func (b *Bridge) Handler(w http.ResponseWriter, r *http.Request) {
 
 	hook, err := NewWebhookfromJSON(r.Body)
 	if err != nil {
-		//err
+		fmt.Println(err)
+		return
 	}
 
 	data, err := NewMessageFromWebhook(hook, b, channelOverride).toJSON()
 	if err != nil {
-		// error
+		fmt.Println(err)
+		return
 	}
 
-	res, err := b.Client.Post("POST", mattermostHookURL, bytes.NewBuffer(data))
+	res, err := b.Client.Post(mattermostHookURL, "application/json", bytes.NewBuffer(data))
 	if err != nil {
-		//error
+		fmt.Println(err)
+		return
 	}
 
 	defer res.Body.Close()
