@@ -4,6 +4,7 @@
 You need incoming webhook URL in `http://<mattermost_server>/hooks/<web_hook_id>` format. Can be copied from Mattermost config.
 
 **Mattermost Config**
+
 1. Go to `...` menu
 2. `System console`
 3. `Integrations` → `Custom Integrations`
