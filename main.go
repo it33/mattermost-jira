@@ -19,7 +19,7 @@ func main() {
 
 	addr := os.Getenv("MJ_BIND_ADDRESS")
 	if addr == "" {
-		addr = "127.0.0.1"
+		addr = "0.0.0.0"
 	}
 	location := addr + ":" + port
 	fmt.Printf("Server starting on %s\n", location)
