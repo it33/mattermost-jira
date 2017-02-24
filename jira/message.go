@@ -12,14 +12,12 @@ type Message struct {
 
 // NewMessageFromWebhook w
 func NewMessageFromWebhook(w *Webhook, b *Bridge, channel string) *Message {
-	m := &Message{
+	return &Message{
 		Text:     w.String(),
 		Channel:  channel,
 		Username: b.UsernameOverride,
 		IconURL:  b.IconURL,
 	}
-
-	return m
 }
 
 func (m *Message) toJSON() ([]byte, error) {
