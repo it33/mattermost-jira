@@ -1,10 +1,6 @@
 package jira
 
-import (
-	"encoding/json"
-	"fmt"
-	"net/http"
-)
+import "encoding/json"
 
 // Message structure for Mattermost JSON creation.
 type Message struct {
@@ -14,24 +10,16 @@ type Message struct {
 	IconURL  string `json:"icon_url"`
 }
 
-// NewMessageFromRequest w
-func NewMessageFromRequest(b *Bridge, r *http.Request) (*Message, error) {
-
-	channelOverride := r.URL.Query().Get("channel")
-
-	hook, err := NewWebhookfromJSON(r.Body)
-	if err != nil {
-		return nil, err
-	}
-
+// NewMessageFromWebhook w
+func NewMessageFromWebhook(w *Webhook, b *Bridge, channel string) *Message {
 	m := &Message{
-		Text:     hook.String(),
-		Channel:  channelOverride,
+		Text:     w.String(),
+		Channel:  channel,
 		Username: b.UsernameOverride,
 		IconURL:  b.IconURL,
 	}
-	fmt.Println(m)
-	return m, nil
+
+	return m
 }
 
 func (m *Message) toJSON() ([]byte, error) {

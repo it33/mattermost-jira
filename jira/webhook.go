@@ -39,13 +39,6 @@ type Webhook struct {
 	}
 }
 
-/*Message format:
-//![user_icon](user_icon_link)[UserFirstName UserSecondName](user_link) commented task ![task_icon](task_icon link)[TSK-42](issue_link) "Test task"
-//Status: ~~Done~~ Finished
-//>Comment text
-"![user_icon](%s) [%s](%s://%s/secure/ViewProfile.jspa?name=%s) %s %s ![task_icon](%s) [%s](%s://%s/browse/%s) \"%s\"%s%s",
-*/
-
 // NewWebhookfromJSON decodes io to a webhook struct
 func NewWebhookfromJSON(d io.ReadCloser) (*Webhook, error) {
 	decoder := json.NewDecoder(d)
@@ -143,6 +136,9 @@ func (w *Webhook) MDComment() string {
 	return comment
 }
 
+/*Text format:
+![user_icon](user_icon_link)[UserFirstName UserSecondName](user_link) commented task ![task_icon](task_icon link)[TSK-42](issue_link) "Test task" Status Comments
+*/
 func (w *Webhook) String() string {
 	return fmt.Sprintf("%s %s %s %s %s %s %s%s%s",
 		w.MDUserIcon(), w.MDTaskIcon(), w.MDUserLink(),

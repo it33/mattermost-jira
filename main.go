@@ -11,8 +11,7 @@ import (
 
 func main() {
 
-	port := os.Getenv("PORT")
-	port = os.Getenv("MJ_PORT")
+	port := os.Getenv("MJ_PORT")
 	if port == "" {
 		port = "5000"
 	}
@@ -21,6 +20,7 @@ func main() {
 	if addr == "" {
 		addr = "0.0.0.0"
 	}
+
 	location := addr + ":" + port
 	fmt.Printf("Server starting on %s\n", location)
 
